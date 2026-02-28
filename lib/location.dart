@@ -38,8 +38,10 @@ int getProximityIntensity(double distanceMeters) {
 /// Yields nothing if the service or permission is unavailable.
 Stream<LocationData> getLocationStream() async* {
   final location = Location();
+  bool serviceEnabled = false;
+  
+  serviceEnabled = await location.serviceEnabled();
 
-  bool serviceEnabled = await location.serviceEnabled();
   if (!serviceEnabled) {
     serviceEnabled = await location.requestService();
     if (!serviceEnabled) return;

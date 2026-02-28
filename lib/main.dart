@@ -65,6 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _threshold3Triggered = false;
   bool _threshold5Triggered = false;
   bool _threshold10Triggered = false;
+  double _distance = 1000;
 
   int _locationIntensityLevel = 0;
   StreamSubscription<LocationData>? _locationSubscription;
@@ -73,7 +74,13 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     midiPlayer.initialize().then((_) => midiPlayer.start());
-    _locationSubscription = getLocationStream().listen(_onLocationUpdate);
+    setState(() => _distance = 997);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      print("Starting Location Subscription");
+
+      _locationSubscription = getLocationStream().listen(_onLocationUpdate);
+      print("got location stream");
+    });
   }
 
   @override
@@ -85,11 +92,19 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _onLocationUpdate(LocationData data) {
     if (data.latitude == null || data.longitude == null) return;
+    print("location updated@@ to ${data.latitude} ${data.longitude}");
+
     final distance = calculateDistance(
-      data.latitude!, data.longitude!,
-      targetLatitude, targetLongitude,
+      data.latitude!,
+      data.longitude!,
+      targetLatitude,
+      targetLongitude,
     );
-    final level = getProximityIntensity(distance);
+    print("Distance is $distance");
+    final level = getProximityIntensity(_distance);
+    setState(() {
+      _distance = distance;
+    });
     if (level == _locationIntensityLevel) return;
     setState(() => _locationIntensityLevel = level);
     if (level >= 2) {
@@ -167,6 +182,10 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: .center,
           children: [
             LocationTracker("t"),
+            Text(
+              '$_distance',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
             const Text('You have pushed the button this many times:'),
             Text(
               '$_counter',
