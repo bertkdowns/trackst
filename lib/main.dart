@@ -66,6 +66,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _threshold5Triggered = false;
   bool _threshold10Triggered = false;
   double _distance = 1000;
+  double _bearing = 0;
 
   int _locationIntensityLevel = 0;
   StreamSubscription<LocationData>? _locationSubscription;
@@ -100,10 +101,17 @@ class _MyHomePageState extends State<MyHomePage> {
       targetLatitude,
       targetLongitude,
     );
+    final bearing = calculateBearing(
+      data.latitude!,
+      data.longitude!,
+      targetLatitude,
+      targetLongitude,
+    );
     print("Distance is $distance");
     final level = getProximityIntensity(_distance);
     setState(() {
       _distance = distance;
+      _bearing = bearing;
     });
     if (level == _locationIntensityLevel) return;
     setState(() => _locationIntensityLevel = level);
@@ -184,6 +192,10 @@ class _MyHomePageState extends State<MyHomePage> {
             LocationTracker("t"),
             Text(
               '$_distance',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            Text(
+              '${_bearing.toStringAsFixed(1)}°',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const Text('You have pushed the button this many times:'),
