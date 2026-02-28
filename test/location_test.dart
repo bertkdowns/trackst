@@ -35,4 +35,33 @@ void main() {
       expect(getProximityIntensity(0), 2);
     });
   });
+
+  group('calculateBearing', () {
+    test('returns ~0 (North) when target is directly north', () {
+      final b = calculateBearing(0.0, 0.0, 1.0, 0.0);
+      expect(b, closeTo(0.0, 0.5));
+    });
+
+    test('returns ~90 (East) when target is directly east', () {
+      final b = calculateBearing(0.0, 0.0, 0.0, 1.0);
+      expect(b, closeTo(90.0, 0.5));
+    });
+
+    test('returns ~180 (South) when target is directly south', () {
+      final b = calculateBearing(1.0, 0.0, 0.0, 0.0);
+      expect(b, closeTo(180.0, 0.5));
+    });
+
+    test('returns ~270 (West) when target is directly west', () {
+      final b = calculateBearing(0.0, 1.0, 0.0, 0.0);
+      expect(b, closeTo(270.0, 0.5));
+    });
+
+    test('returns value in range [0, 360)', () {
+      final b = calculateBearing(
+          targetLatitude, targetLongitude, targetLatitude + 0.001, targetLongitude + 0.001);
+      expect(b, greaterThanOrEqualTo(0.0));
+      expect(b, lessThan(360.0));
+    });
+  });
 }
