@@ -101,31 +101,19 @@ class _MyHomePageState extends State<MyHomePage> {
       targetLongitude,
     );
     print("Distance is $distance");
-    final level = getProximityIntensity(_distance);
+    final intensityLevel = getProximityIntensity(distance, numLevels: intensityLayers.length);
     setState(() {
       _distance = distance;
     });
-    if (level == _locationIntensityLevel) return;
-    setState(() => _locationIntensityLevel = level);
-    if (level >= 2) {
-      midiPlayer.speedUp(3.0);
-      midiPlayer.addLayer();
-    } else if (level >= 1) {
-      midiPlayer.speedUp(1.5);
-    } else {
-      midiPlayer.speedUp(1.0);
-    }
+    if (intensityLevel == _locationIntensityLevel) return;
+    setState(() => _locationIntensityLevel = intensityLevel);
+    midiPlayer.speedUp(1.0 + intensityLevel * 0.5);
+    midiPlayer.setIntensityLevel(intensityLevel);
   }
 
   void _incrementCounter() {
-    // LocationData? data = await getLocationData();
-    // if (data == null) {
-    //   return;
-    // }
-
     setState(() {
       _counter++;
-      // _counter = data.latitude ?? 1;
     });
 
     // Speed up and add layers as the counter (proximity) increases.
@@ -133,14 +121,15 @@ class _MyHomePageState extends State<MyHomePage> {
     if (_counter >= 10 && !_threshold10Triggered) {
       _threshold10Triggered = true;
       midiPlayer.speedUp(3.0);
-      midiPlayer.addLayer();
+      midiPlayer.setIntensityLevel(intensityLayers.length);
     } else if (_counter >= 5 && !_threshold5Triggered) {
       _threshold5Triggered = true;
       midiPlayer.speedUp(2.0);
-      midiPlayer.addLayer();
+      midiPlayer.setIntensityLevel(2);
     } else if (_counter >= 3 && !_threshold3Triggered) {
       _threshold3Triggered = true;
       midiPlayer.speedUp(1.5);
+      midiPlayer.setIntensityLevel(1);
     }
   }
 
