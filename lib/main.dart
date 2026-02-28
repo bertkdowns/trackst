@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:trackst/location.dart';
+import 'package:trackst/midi.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,7 +30,7 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: .fromSeed(seedColor: Colors.green),
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
@@ -54,9 +56,15 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  double _counter = 0;
 
-  void _incrementCounter() {
+  void _incrementCounter() async {
+    // LocationData? data = await getLocationData();
+    // if (data == null) {
+    //   return;
+    // }
+
+    playNote();
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
@@ -64,6 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
       _counter++;
+      // _counter = data.latitude ?? 1;
     });
   }
 
@@ -104,6 +113,7 @@ class _MyHomePageState extends State<MyHomePage> {
           // wireframe for each widget.
           mainAxisAlignment: .center,
           children: [
+            LocationTracker("t"),
             const Text('You have pushed the button this many times:'),
             Text(
               '$_counter',
