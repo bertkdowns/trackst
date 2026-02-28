@@ -34,12 +34,25 @@ int getProximityIntensity(double distanceMeters) {
   return 0;
 }
 
+
+Future<bool> _waitForService(Location location) async {
+  for (int i = 0; i < 5; i++) {
+    try {
+      if (await location.serviceEnabled()) {
+        return true;
+      }
+    } catch (_) {}
+
+    await Future.delayed(const Duration(seconds: 3));
+  }
+  return false;
+}
 /// Requests permissions and returns a stream of location updates.
 /// Yields nothing if the service or permission is unavailable.
 Stream<LocationData> getLocationStream() async* {
   final location = Location();
   bool serviceEnabled = false;
-  
+  await _waitForService(location);
   serviceEnabled = await location.serviceEnabled();
 
   if (!serviceEnabled) {
