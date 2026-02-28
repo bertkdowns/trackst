@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:location/location.dart';
 import 'package:trackst/location.dart';
 import 'package:trackst/midi.dart';
 
@@ -63,16 +66,40 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _threshold5Triggered = false;
   bool _threshold10Triggered = false;
 
+  int _locationIntensityLevel = 0;
+  StreamSubscription<LocationData>? _locationSubscription;
+
   @override
   void initState() {
     super.initState();
     midiPlayer.initialize().then((_) => midiPlayer.start());
+    _locationSubscription = getLocationStream().listen(_onLocationUpdate);
   }
 
   @override
   void dispose() {
+    _locationSubscription?.cancel();
     midiPlayer.dispose();
     super.dispose();
+  }
+
+  void _onLocationUpdate(LocationData data) {
+    if (data.latitude == null || data.longitude == null) return;
+    final distance = calculateDistance(
+      data.latitude!, data.longitude!,
+      targetLatitude, targetLongitude,
+    );
+    final level = getProximityIntensity(distance);
+    if (level == _locationIntensityLevel) return;
+    setState(() => _locationIntensityLevel = level);
+    if (level >= 2) {
+      midiPlayer.speedUp(3.0);
+      midiPlayer.addLayer();
+    } else if (level >= 1) {
+      midiPlayer.speedUp(1.5);
+    } else {
+      midiPlayer.speedUp(1.0);
+    }
   }
 
   void _incrementCounter() {
