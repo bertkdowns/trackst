@@ -1,0 +1,5 @@
+target_coordinates.dart
+## This file defines:
+
+# double getTargetLatitude() {return -37.78667489928307;}
+# double getTargetLongitude() {return 175.31818259264838;}

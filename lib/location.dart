@@ -2,10 +2,11 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
-
+import 'package:trackst/target_coordinates.dart';
 // Target coordinates for the game location
-const double targetLatitude = -37.78667489928307;
-const double targetLongitude = 175.31818259264838;
+
+final targetLatitude = getTargetLatitude();
+final targetLongitude = getTargetLongitude();
 
 /// Calculates the distance in meters between two geographic coordinates
 /// using the Haversine formula.
