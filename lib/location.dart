@@ -38,13 +38,27 @@ double calculateBearing(
   return (bearing + 360) % 360;
 }
 
-/// Returns a proximity intensity level based on distance to the target:
-///   0 – more than 200 m away (normal)
-///   1 – within 200 m (medium)
-///   2 – within 100 m (highest)
-int getProximityIntensity(double distanceMeters) {
-  if (distanceMeters <= 100) return 2;
-  if (distanceMeters <= 200) return 1;
+/// Returns a proximity intensity level based on distance to the target.
+///
+/// The range 0–200 m is divided evenly into [numLevels] bands:
+///   - Returns 0 when more than 200 m away.
+///   - Returns [numLevels] when within `200 / numLevels` metres.
+///
+/// This means adding an entry to [intensityLayers] and passing
+/// `intensityLayers.length` as [numLevels] will automatically add a new
+/// distance threshold without any other changes.
+///
+/// The default value of [numLevels] preserves the original two-band behaviour:
+///   0 – more than 200 m (normal), 1 – within 200 m (medium), 2 – within 100 m (highest).
+int getProximityIntensity(double distanceMeters, {int numLevels = 2}) {
+  const double maxDistance = 200.0;
+  if (distanceMeters > maxDistance) return 0;
+  final double bandSize = maxDistance / numLevels;
+  for (int level = numLevels; level >= 1; level--) {
+    if (distanceMeters <= bandSize * (numLevels - level + 1)) {
+      return level;
+    }
+  }
   return 0;
 }
 
