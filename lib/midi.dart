@@ -43,7 +43,7 @@ class MidiPlayer {
       sfId: _sfId!,
       channel: 0,
       bank: 0,
-      program: 0,
+      program: 43,
     );
     // Channel 9 is the GM percussion channel
     await _midiPro.selectInstrument(
