@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:trackst/location.dart';
 import 'package:trackst/midi.dart';
 
+final MidiPlayer midiPlayer = MidiPlayer();
+
 void main() {
   runApp(const MyApp());
 }
@@ -57,23 +59,47 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   double _counter = 0;
+  bool _threshold3Triggered = false;
+  bool _threshold5Triggered = false;
+  bool _threshold10Triggered = false;
 
-  void _incrementCounter() async {
+  @override
+  void initState() {
+    super.initState();
+    midiPlayer.initialize().then((_) => midiPlayer.start());
+  }
+
+  @override
+  void dispose() {
+    midiPlayer.dispose();
+    super.dispose();
+  }
+
+  void _incrementCounter() {
     // LocationData? data = await getLocationData();
     // if (data == null) {
     //   return;
     // }
 
-    playNote();
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
       _counter++;
       // _counter = data.latitude ?? 1;
     });
+
+    // Speed up and add layers as the counter (proximity) increases.
+    // Each threshold is triggered only once.
+    if (_counter >= 10 && !_threshold10Triggered) {
+      _threshold10Triggered = true;
+      midiPlayer.speedUp(3.0);
+      midiPlayer.addLayer();
+    } else if (_counter >= 5 && !_threshold5Triggered) {
+      _threshold5Triggered = true;
+      midiPlayer.speedUp(2.0);
+      midiPlayer.addLayer();
+    } else if (_counter >= 3 && !_threshold3Triggered) {
+      _threshold3Triggered = true;
+      midiPlayer.speedUp(1.5);
+    }
   }
 
   @override
