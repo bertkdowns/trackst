@@ -1,6 +1,73 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
+import 'package:trackst/target_coordinates.dart';
+// Target coordinates for the game location
 
+final targetLatitude = getTargetLatitude();
+final targetLongitude = getTargetLongitude();
+
+/// Calculates the distance in meters between two geographic coordinates
+/// using the Haversine formula.
+double calculateDistance(
+    double lat1, double lon1, double lat2, double lon2) {
+  const earthRadius = 6371000.0;
+  final dLat = (lat2 - lat1) * pi / 180;
+  final dLon = (lon2 - lon1) * pi / 180;
+  final a = sin(dLat / 2) * sin(dLat / 2) +
+      cos(lat1 * pi / 180) *
+          cos(lat2 * pi / 180) *
+          sin(dLon / 2) *
+          sin(dLon / 2);
+  final c = 2 * atan2(sqrt(a), sqrt(1 - a));
+  return earthRadius * c;
+}
+
+/// Returns a proximity intensity level based on distance to the target:
+///   0 – more than 200 m away (normal)
+///   1 – within 200 m (medium)
+///   2 – within 100 m (highest)
+int getProximityIntensity(double distanceMeters) {
+  if (distanceMeters <= 100) return 2;
+  if (distanceMeters <= 200) return 1;
+  return 0;
+}
+
+
+Future<bool> _waitForService(Location location) async {
+  for (int i = 0; i < 5; i++) {
+    try {
+      if (await location.serviceEnabled()) {
+        return true;
+      }
+    } catch (_) {}
+
+    await Future.delayed(const Duration(seconds: 3));
+  }
+  return false;
+}
+/// Requests permissions and returns a stream of location updates.
+/// Yields nothing if the service or permission is unavailable.
+Stream<LocationData> getLocationStream() async* {
+  final location = Location();
+  bool serviceEnabled = false;
+  await _waitForService(location);
+  serviceEnabled = await location.serviceEnabled();
+
+  if (!serviceEnabled) {
+    serviceEnabled = await location.requestService();
+    if (!serviceEnabled) return;
+  }
+
+  PermissionStatus permissionGranted = await location.hasPermission();
+  if (permissionGranted == PermissionStatus.denied) {
+    permissionGranted = await location.requestPermission();
+    if (permissionGranted != PermissionStatus.granted) return;
+  }
+
+  yield* location.onLocationChanged;
+}
 
 Future<LocationData?> getLocationData() async {
 

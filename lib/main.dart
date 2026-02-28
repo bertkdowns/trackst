@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:location/location.dart';
 import 'package:trackst/location.dart';
 import 'package:trackst/midi.dart';
 
@@ -62,17 +65,56 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _threshold3Triggered = false;
   bool _threshold5Triggered = false;
   bool _threshold10Triggered = false;
+  double _distance = 1000;
+
+  int _locationIntensityLevel = 0;
+  StreamSubscription<LocationData>? _locationSubscription;
 
   @override
   void initState() {
     super.initState();
     midiPlayer.initialize().then((_) => midiPlayer.start());
+    setState(() => _distance = 997);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      print("Starting Location Subscription");
+
+      _locationSubscription = getLocationStream().listen(_onLocationUpdate);
+      print("got location stream");
+    });
   }
 
   @override
   void dispose() {
+    _locationSubscription?.cancel();
     midiPlayer.dispose();
     super.dispose();
+  }
+
+  void _onLocationUpdate(LocationData data) {
+    if (data.latitude == null || data.longitude == null) return;
+    print("location updated@@ to ${data.latitude} ${data.longitude}");
+
+    final distance = calculateDistance(
+      data.latitude!,
+      data.longitude!,
+      targetLatitude,
+      targetLongitude,
+    );
+    print("Distance is $distance");
+    final level = getProximityIntensity(_distance);
+    setState(() {
+      _distance = distance;
+    });
+    if (level == _locationIntensityLevel) return;
+    setState(() => _locationIntensityLevel = level);
+    if (level >= 2) {
+      midiPlayer.speedUp(3.0);
+      midiPlayer.addLayer();
+    } else if (level >= 1) {
+      midiPlayer.speedUp(1.5);
+    } else {
+      midiPlayer.speedUp(1.0);
+    }
   }
 
   void _incrementCounter() {
@@ -140,6 +182,10 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: .center,
           children: [
             LocationTracker("t"),
+            Text(
+              '$_distance',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
             const Text('You have pushed the button this many times:'),
             Text(
               '$_counter',
