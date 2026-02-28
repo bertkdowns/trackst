@@ -24,6 +24,34 @@ double calculateDistance(
   return earthRadius * c;
 }
 
+/// Calculates the compass bearing in degrees (0–360) from one geographic
+/// coordinate to another, where 0/360 is North, 90 is East, etc.
+double calculateBearing(
+    double lat1, double lon1, double lat2, double lon2) {
+  final lat1Rad = lat1 * pi / 180;
+  final lat2Rad = lat2 * pi / 180;
+  final dLon = (lon2 - lon1) * pi / 180;
+  final y = sin(dLon) * cos(lat2Rad);
+  final x =
+      cos(lat1Rad) * sin(lat2Rad) - sin(lat1Rad) * cos(lat2Rad) * cos(dLon);
+  final bearing = atan2(y, x) * 180 / pi;
+  return (bearing + 360) % 360;
+}
+
+/// Calculates the compass bearing in degrees (0–360) from one geographic
+/// coordinate to another, where 0/360 is North, 90 is East, etc.
+double calculateBearing(
+    double lat1, double lon1, double lat2, double lon2) {
+  final lat1Rad = lat1 * pi / 180;
+  final lat2Rad = lat2 * pi / 180;
+  final dLon = (lon2 - lon1) * pi / 180;
+  final y = sin(dLon) * cos(lat2Rad);
+  final x =
+      cos(lat1Rad) * sin(lat2Rad) - sin(lat1Rad) * cos(lat2Rad) * cos(dLon);
+  final bearing = atan2(y, x) * 180 / pi;
+  return (bearing + 360) % 360;
+}
+
 /// Returns a proximity intensity level based on distance to the target.
 ///
 /// The range 0–200 m is divided evenly into [numLevels] bands:
