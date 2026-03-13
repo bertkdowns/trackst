@@ -5,10 +5,10 @@
 import FlutterMacOS
 import Foundation
 
-import flutter_midi_pro
+import audioplayers_darwin
 import location
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
-  FlutterMidiProPlugin.register(with: registry.registrar(forPlugin: "FlutterMidiProPlugin"))
+  AudioplayersDarwinPlugin.register(with: registry.registrar(forPlugin: "AudioplayersDarwinPlugin"))
   LocationPlugin.register(with: registry.registrar(forPlugin: "LocationPlugin"))
 }

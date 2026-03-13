@@ -61,11 +61,11 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  double _counter = 0;
+  int _counter = 0;
   double _distance = 1000;
   double _bearing = 0;
 
-  int _locationIntensityLevel = 0;
+  int _locationIntensityLevel = -1;
   StreamSubscription<LocationData>? _locationSubscription;
 
   @override
@@ -110,15 +110,17 @@ class _MyHomePageState extends State<MyHomePage> {
       _distance = distance;
       _bearing = bearing;
     });
-    if (intensityLevel == _locationIntensityLevel) return;
-    setState(() => _locationIntensityLevel = intensityLevel);
-    audioLayerPlayer.setIntensityLevel(intensityLevel);
+    //if (intensityLevel == _locationIntensityLevel) return;
+    //setState(() => _locationIntensityLevel = intensityLevel);
+    //print("setting intensity level to $intensityLevel");
+    //audioLayerPlayer.setIntensityLevel(intensityLevel);
   }
 
   void _incrementCounter() {
     setState(() {
       _counter++;
     });
+    audioLayerPlayer.setIntensityLevel(_counter);
   }
 
   @override
@@ -170,6 +172,11 @@ class _MyHomePageState extends State<MyHomePage> {
             const Text('You have pushed the button this many times:'),
             Text(
               '$_counter',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            const Text('Intensity Level'),
+            Text(
+              '$_locationIntensityLevel',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
           ],

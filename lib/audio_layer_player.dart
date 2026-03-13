@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:audioplayers/audioplayers.dart';
 
 /// Ordered list of asset paths for each intensity layer.
@@ -36,18 +38,29 @@ class AudioLayerPlayer {
   /// Prepares all audio players and starts them looping at volume 0.
   ///
   /// Call this once before using [setIntensityLevel].
-  Future<void> initialize() async {
+ Future<void> initialize() async {
+    print("Initialising audio");
+    // Ensure each player is configured, then start them concurrently.
+    final startFutures = <Future>[];
     for (int i = 0; i < _players.length; i++) {
       final player = _players[i];
-      await player.setReleaseMode(ReleaseMode.loop);
-      await player.setVolume(0.0);
-      await player.play(AssetSource(layerAssets[i]));
+      // If your package exposes a player mode, set it here (audioplayers example):
+      // await player.setPlayerMode(PlayerMode.lowLatency);
+      startFutures.add(Future(() async {
+        await player.setReleaseMode(ReleaseMode.loop);
+        await player.setVolume(0.0);
+        await player.play(AssetSource(layerAssets[i])); // do not await in loop directly
+      }() as FutureOr<dynamic> Function()));
     }
+    // Wait for all play attempts to start (optional)
+    await Future.wait(startFutures);
+    print("Finished Initialising Audio");
     _isInitialized = true;
+    setIntensityLevel(0);
   }
 
   /// Makes layers 0 through [level]-1 audible (volume 1.0) and silences the
-  /// rest (volume 0.0).  For example, level 1 turns on only layer 0; level 3
+  /// rest (volume 0.0).  For example, level 0 turns on only layer 0; level 2
   /// turns on layers 0, 1, and 2.
   ///
   /// [level] is clamped to [0, layerAssets.length].  Passing 0 silences
@@ -55,8 +68,10 @@ class AudioLayerPlayer {
   void setIntensityLevel(int level) {
     if (!_isInitialized) return;
     final target = level.clamp(0, layerAssets.length);
+    print("setting volume of $level with target $target");
     for (int i = 0; i < _players.length; i++) {
-      _players[i].setVolume(i < target ? 1.0 : 0.0);
+      _players[i].setVolume(i <= target ? 1.0 : 1.0);
+      print("set volume of layer $i to ${i <= target ? 1.0 : 0.0}");
     }
   }
 
@@ -67,7 +82,7 @@ class AudioLayerPlayer {
   void setLayerVolume(int layerIndex, double volume) {
     if (!_isInitialized) return;
     if (layerIndex < 0 || layerIndex >= _players.length) return;
-    _players[layerIndex].setVolume(volume.clamp(0.0, 1.0));
+    _players[layerIndex].setVolume(volume.clamp(1.0, 1.0));
   }
 
   /// Pauses all layers.
