@@ -34,6 +34,21 @@ void main() {
       expect(getProximityIntensity(50), 2);
       expect(getProximityIntensity(0), 2);
     });
+
+    test('divides range into numLevels bands when numLevels is 3', () {
+      // With numLevels=3 the 200 m range splits into three ~66.67 m bands.
+      expect(getProximityIntensity(250, numLevels: 3), 0); // > 200 m
+      expect(getProximityIntensity(180, numLevels: 3), 1); // ≤ 200 m
+      expect(getProximityIntensity(100, numLevels: 3), 2); // ≤ 133.33 m
+      expect(getProximityIntensity(50,  numLevels: 3), 3); // ≤ 66.67 m
+      expect(getProximityIntensity(0,   numLevels: 3), 3);
+    });
+
+    test('works with a single level', () {
+      expect(getProximityIntensity(201, numLevels: 1), 0);
+      expect(getProximityIntensity(200, numLevels: 1), 1);
+      expect(getProximityIntensity(0,   numLevels: 1), 1);
+    });
   });
 
   group('calculateBearing', () {
