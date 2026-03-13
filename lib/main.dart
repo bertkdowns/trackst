@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
 import 'package:trackst/location.dart';
-import 'package:trackst/midi.dart';
+import 'package:trackst/audio_layer_player.dart';
 
-final MidiPlayer midiPlayer = MidiPlayer();
+final AudioLayerPlayer audioLayerPlayer = AudioLayerPlayer();
 
 void main() {
   runApp(const MyApp());
@@ -62,9 +62,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   double _counter = 0;
-  bool _threshold3Triggered = false;
-  bool _threshold5Triggered = false;
-  bool _threshold10Triggered = false;
   double _distance = 1000;
   double _bearing = 0;
 
@@ -74,7 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    midiPlayer.initialize().then((_) => midiPlayer.start());
+    audioLayerPlayer.initialize(); // intentionally unawaited – fire-and-forget startup
     setState(() => _distance = 997);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       print("Starting Location Subscription");
@@ -87,7 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void dispose() {
     _locationSubscription?.cancel();
-    midiPlayer.dispose();
+    audioLayerPlayer.dispose();
     super.dispose();
   }
 
@@ -108,37 +105,20 @@ class _MyHomePageState extends State<MyHomePage> {
       targetLongitude,
     );
     print("Distance is $distance");
-    final intensityLevel = getProximityIntensity(distance, numLevels: intensityLayers.length);
+    final intensityLevel = getProximityIntensity(distance, numLevels: layerAssets.length);
     setState(() {
       _distance = distance;
       _bearing = bearing;
     });
     if (intensityLevel == _locationIntensityLevel) return;
     setState(() => _locationIntensityLevel = intensityLevel);
-    midiPlayer.speedUp(1.0 + intensityLevel * 0.5);
-    midiPlayer.setIntensityLevel(intensityLevel);
+    audioLayerPlayer.setIntensityLevel(intensityLevel);
   }
 
   void _incrementCounter() {
     setState(() {
       _counter++;
     });
-
-    // Speed up and add layers as the counter (proximity) increases.
-    // Each threshold is triggered only once.
-    if (_counter >= 10 && !_threshold10Triggered) {
-      _threshold10Triggered = true;
-      midiPlayer.speedUp(3.0);
-      midiPlayer.setIntensityLevel(intensityLayers.length);
-    } else if (_counter >= 5 && !_threshold5Triggered) {
-      _threshold5Triggered = true;
-      midiPlayer.speedUp(2.0);
-      midiPlayer.setIntensityLevel(2);
-    } else if (_counter >= 3 && !_threshold3Triggered) {
-      _threshold3Triggered = true;
-      midiPlayer.speedUp(1.5);
-      midiPlayer.setIntensityLevel(1);
-    }
   }
 
   @override
