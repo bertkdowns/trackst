@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:location/location.dart';
 import 'package:trackst/target_coordinates.dart';
 // Target coordinates for the game location
-
+// these are not committed to the repository so that I don't expose my location publicly.
 final targetLatitude = getTargetLatitude();
 final targetLongitude = getTargetLongitude();
 
